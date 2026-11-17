@@ -1,4 +1,9 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter,
+  Navigate,
+  Routes,
+  Route,
+} from "react-router-dom";
 
 import LandingPage from "../pages/landing/LandingPage";
 import LoginPage from "../pages/auth/LoginPage";
@@ -9,6 +14,18 @@ import ResumeUploadPage from "../pages/dashboard/ResumeUploadPage";
 import DashboardLayout from "../layout/DashboardLayout";
 import ProtectedRoute from "./ProtectedRoute";
 import JobDescriptionPage from "../pages/dashboard/JobDescriptionPage";
+import ResumeAnalysisPage from "../pages/dashboard/ResumeAnalysisPage";
+import HistoryPage from "../pages/dashboard/HistoryPage";
+import ApplicationTrackerPage from "../pages/dashboard/ApplicationTrackerPage";
+import ResumeHealthPage from "../pages/dashboard/ResumeHealthPage";
+import InterviewPreparationPage from "../pages/dashboard/InterviewPreparationPage";
+import { useAuth } from "../context/AuthContext";
+
+function LogoutRoute() {
+  const { logout } = useAuth();
+  logout();
+  return <Navigate to="/login" replace />;
+}
 
 export default function AppRouter() {
   return (
@@ -28,11 +45,29 @@ export default function AppRouter() {
               element={<ResumeUploadPage />}
             />
             <Route
-  path="/dashboard/job-description"
-  element={<JobDescriptionPage />}
-/>
+              path="/dashboard/job-description"
+              element={<JobDescriptionPage />}
+            />
+            <Route
+              path="/dashboard/analysis"
+              element={<ResumeAnalysisPage />}
+            />
+            <Route
+              path="/dashboard/applications"
+              element={<ApplicationTrackerPage />}
+            />
+            <Route
+              path="/dashboard/resume-health"
+              element={<ResumeHealthPage />}
+            />
+            <Route path="/dashboard/history" element={<HistoryPage />} />
+            <Route
+              path="/dashboard/interview-prep"
+              element={<InterviewPreparationPage />}
+            />
           </Route>
         </Route>
+        <Route path="/logout" element={<LogoutRoute />} />
       </Routes>
     </BrowserRouter>
   );

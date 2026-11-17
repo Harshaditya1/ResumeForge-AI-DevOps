@@ -17,7 +17,7 @@ export default function Sidebar() {
         </h1>
 
         <p className="mt-2 text-sm text-[#C9D6D1]">
-          AI Resume Tailoring Platform
+          Career application workspace
         </p>
       </div>
 

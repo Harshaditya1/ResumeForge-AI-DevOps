@@ -18,4 +18,8 @@ public class DashboardSummaryDTO {
     private long totalJobDescriptions;
 
     private long totalTailoredResumes;
+
+    private long totalApplications;
+
+    private long totalInterviewQuestionsCompleted;
 }

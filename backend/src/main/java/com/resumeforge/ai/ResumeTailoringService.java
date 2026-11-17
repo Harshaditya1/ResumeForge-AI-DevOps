@@ -6,6 +6,7 @@ import com.resumeforge.resume.Resume;
 import com.resumeforge.jobdescription.JobDescription;
 import com.resumeforge.tailoring.TailoredResume;
 import com.resumeforge.tailoring.TailoredResumeService;
+import com.resumeforge.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -55,7 +56,7 @@ public class ResumeTailoringService {
             latest = tailoredResumeService.getLatest(
                     resume.getId()
             );
-        } catch (Exception ignored) {
+        } catch (ResourceNotFoundException ignored) {
             // First tailored resume
         }
 

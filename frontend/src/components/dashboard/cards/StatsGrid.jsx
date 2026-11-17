@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import {
   FaFileAlt,
   FaChartLine,
-  FaFilePdf,
-  FaMagic,
+  FaBriefcase,
+  FaUserGraduate,
 } from "react-icons/fa";
 
 import StatCard from "./StatCard";
@@ -32,15 +32,15 @@ export default function StatsGrid() {
             color: "#2F80ED",
           },
           {
-            title: "Generated Resumes",
-            value: data.totalGeneratedResumes,
-            icon: FaFilePdf,
+            title: "Applications",
+            value: data.totalApplications,
+            icon: FaBriefcase,
             color: "#F59E0B",
           },
           {
-            title: "Tailored Resumes",
-            value: data.totalTailoredResumes,
-            icon: FaMagic,
+            title: "Interview Progress",
+            value: data.totalInterviewQuestionsCompleted,
+            icon: FaUserGraduate,
             color: "#8B5CF6",
           },
         ]);

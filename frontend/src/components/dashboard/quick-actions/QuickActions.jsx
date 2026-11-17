@@ -2,7 +2,7 @@ import {
   FaFileUpload,
   FaClipboardList,
   FaChartLine,
-  FaMagic,
+  FaBriefcase,
 } from "react-icons/fa";
 
 import QuickActionCard from "./QuickActionCard";
@@ -30,11 +30,11 @@ const actions = [
     path: "/dashboard/analysis",
   },
   {
-    title: "Generate Resume",
-    description: "Generate an ATS optimized resume.",
-    icon: FaMagic,
+    title: "Job Application Tracker",
+    description: "Track applications, interviews and offers.",
+    icon: FaBriefcase,
     color: "#8B5CF6",
-    path: "/dashboard/tailored-resume",
+    path: "/dashboard/applications",
   },
 ];
 

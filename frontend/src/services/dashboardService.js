@@ -1,9 +1,8 @@
-import apiClient from "./apiClient";
+import { getCached } from "./apiClient";
 
 const dashboardService = {
   async getDashboardSummary() {
-    const response = await apiClient.get("/api/dashboard/summary");
-    return response.data;
+    return getCached("/api/dashboard/summary");
   },
 };
 

@@ -1,4 +1,4 @@
-import apiClient from "./apiClient";
+import apiClient, { getCached } from "./apiClient";
 
 /**
  * Save Job Description
@@ -18,22 +18,14 @@ export const saveJobDescription = async (content) => {
  * Get all Job Descriptions
  */
 export const getJobDescriptions = async () => {
-  const response = await apiClient.get(
-    "/api/job-descriptions"
-  );
-
-  return response.data;
+  return getCached("/api/job-descriptions");
 };
 
 /**
  * Get latest Job Description
  */
 export const getLatestJobDescription = async () => {
-  const response = await apiClient.get(
-    "/api/job-descriptions/latest"
-  );
-
-  return response.data;
+  return getCached("/api/job-descriptions/latest");
 };
 
 /**
@@ -42,11 +34,7 @@ export const getLatestJobDescription = async () => {
 export const getJobDescriptionById = async (
   jobDescriptionId
 ) => {
-  const response = await apiClient.get(
-    `/api/job-descriptions/${jobDescriptionId}`
-  );
-
-  return response.data;
+  return getCached(`/api/job-descriptions/${jobDescriptionId}`);
 };
 
 /**

@@ -1,4 +1,4 @@
-import apiClient from "./apiClient";
+import apiClient, { getCached } from "./apiClient";
 
 /**
  * Upload Resume
@@ -35,24 +35,21 @@ export const uploadResume = async (file, onUploadProgress) => {
  * Get all resumes
  */
 export const getResumes = async () => {
-  const response = await apiClient.get("/api/resumes");
-  return response.data;
+  return getCached("/api/resumes");
 };
 
 /**
  * Get latest resume
  */
 export const getLatestResume = async () => {
-  const response = await apiClient.get("/api/resumes/latest");
-  return response.data;
+  return getCached("/api/resumes/latest");
 };
 
 /**
  * Get resume by id
  */
 export const getResumeById = async (resumeId) => {
-  const response = await apiClient.get(`/api/resumes/${resumeId}`);
-  return response.data;
+  return getCached(`/api/resumes/${resumeId}`);
 };
 
 /**

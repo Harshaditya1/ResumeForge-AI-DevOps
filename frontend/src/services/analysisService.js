@@ -1,11 +1,11 @@
-import apiClient from "./apiClient";
+import apiClient, { getCached } from "./apiClient";
 
 /**
  * Analyze latest Resume against latest Job Description
  */
 export const analyzeResume = async () => {
   const response = await apiClient.post(
-    "/api/analysis/analyze"
+    "/api/analysis"
   );
 
   return response.data;
@@ -15,20 +15,12 @@ export const analyzeResume = async () => {
  * Get latest analysis
  */
 export const getLatestAnalysis = async () => {
-  const response = await apiClient.get(
-    "/api/analysis/latest"
-  );
-
-  return response.data;
+  return getCached("/api/analysis/latest");
 };
 
 /**
  * Get analysis history
  */
 export const getAnalysisHistory = async () => {
-  const response = await apiClient.get(
-    "/api/analysis"
-  );
-
-  return response.data;
+  return getCached("/api/analysis/history");
 };

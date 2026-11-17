@@ -23,7 +23,8 @@ public class ResumeGenerationPromptBuilder {
                 - Optimize for ATS keywords.
                 - Preserve factual information.
                 - Produce a complete professional resume.
-                - Return only the resume text.
+                - Return only valid JSON with this exact shape:
+                  {"generatedResume":"complete resume text"}
                 
                 -------------------------
                 ORIGINAL RESUME

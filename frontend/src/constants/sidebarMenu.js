@@ -3,10 +3,10 @@ import {
   FaFileUpload,
   FaClipboardList,
   FaChartLine,
-  FaMagic,
-  FaFilePdf,
+  FaBriefcase,
+  FaHeartbeat,
   FaHistory,
-  FaUserTie,
+  FaBookOpen,
   FaSignOutAlt,
 } from "react-icons/fa";
 
@@ -32,14 +32,14 @@ export const sidebarMenu = [
     path: "/dashboard/analysis",
   },
   {
-    title: "Tailored Resume",
-    icon: FaMagic,
-    path: "/dashboard/tailored-resume",
+    title: "Job Application Tracker",
+    icon: FaBriefcase,
+    path: "/dashboard/applications",
   },
   {
-    title: "Generated Resume",
-    icon: FaFilePdf,
-    path: "/dashboard/generated-resume",
+    title: "Resume Health Center",
+    icon: FaHeartbeat,
+    path: "/dashboard/resume-health",
   },
   {
     title: "Resume History",
@@ -47,9 +47,9 @@ export const sidebarMenu = [
     path: "/dashboard/history",
   },
   {
-    title: "Interview Questions",
-    icon: FaUserTie,
-    path: "/dashboard/interview",
+    title: "Interview Preparation Hub",
+    icon: FaBookOpen,
+    path: "/dashboard/interview-prep",
   },
   {
     title: "Logout",

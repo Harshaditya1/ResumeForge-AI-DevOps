@@ -23,6 +23,7 @@ const { login } = useAuth();
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm({
     mode: "onTouched",
@@ -32,6 +33,12 @@ const { login } = useAuth();
       remember: false,
     },
   });
+
+  const fillDemoAccount = () => {
+    setValue("email", "candidate_unique_123@example.com", { shouldValidate: true });
+    setValue("password", "Password123", { shouldValidate: true });
+    toast.success("Demo credentials filled!");
+  };
 
   const onSubmit = async (data) => {
     if (loading) return;
@@ -108,6 +115,14 @@ const { login } = useAuth();
             <p className="mt-2 text-center text-sm text-gray-400">
               Sign in to continue to ResumeForge AI
             </p>
+
+            <button
+              type="button"
+              onClick={fillDemoAccount}
+              className="mt-3 inline-flex items-center gap-1.5 text-xs text-[#B0E4CC] bg-[#408A71]/20 hover:bg-[#408A71]/30 border border-[#408A71]/40 px-3 py-1.5 rounded-lg transition cursor-pointer"
+            >
+              <span>⚡</span> Use Demo Account
+            </button>
           </div>
 
           <form

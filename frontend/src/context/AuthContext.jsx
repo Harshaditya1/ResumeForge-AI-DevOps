@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useState } from "react";
 import {
   getToken,
   saveToken,
@@ -9,20 +9,9 @@ const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const savedToken = getToken();
-
-    if (savedToken) {
-      setToken(savedToken);
-      setIsAuthenticated(true);
-    }
-
-    setLoading(false);
-  }, []);
+  const [token, setToken] = useState(() => getToken());
+  const [isAuthenticated, setIsAuthenticated] = useState(() => !!getToken());
+  const loading = false;
 
   const login = (jwtToken, userData = null) => {
     saveToken(jwtToken);

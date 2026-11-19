@@ -45,7 +45,7 @@ public class ResumeService {
                 .storedFileName(storedFileName)
                 .fileType(file.getContentType())
                 .fileSize(file.getSize())
-                .filePath("uploads/" + storedFileName)
+                .filePath(fileStorageService.getFilePath(storedFileName).toString())
                 .uploadedAt(LocalDateTime.now())
                 .build();
 

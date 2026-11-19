@@ -14,7 +14,6 @@ import {
   FaClock,
   FaGlobe,
   FaBuilding,
-  FaFilter,
 } from "react-icons/fa";
 import {
   createApplication,

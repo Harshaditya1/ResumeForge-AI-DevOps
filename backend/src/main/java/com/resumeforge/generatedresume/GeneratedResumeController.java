@@ -12,7 +12,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/generated-resumes")
-@CrossOrigin(origins = "http://localhost:5173")
 public class GeneratedResumeController {
 
     private final GeneratedResumeService generatedResumeService;

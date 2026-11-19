@@ -1,5 +1,6 @@
 package com.resumeforge.resume;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -13,7 +14,8 @@ import java.util.UUID;
 @Service
 public class FileStorageService {
 
-    private static final String UPLOAD_DIR = "uploads";
+    @Value("${file.upload-dir:uploads}")
+    private String uploadDir = "uploads";
 
     public String storeFile(MultipartFile file) throws IOException {
 
@@ -27,7 +29,7 @@ public class FileStorageService {
 
         String storedFileName = UUID.randomUUID() + extension;
 
-        Path uploadPath = Paths.get(UPLOAD_DIR);
+        Path uploadPath = Paths.get(uploadDir);
 
         if (!Files.exists(uploadPath)) {
             Files.createDirectories(uploadPath);
@@ -51,7 +53,7 @@ public class FileStorageService {
             return;
         }
 
-        Path filePath = Paths.get(UPLOAD_DIR).resolve(storedFileName);
+        Path filePath = Paths.get(uploadDir).resolve(storedFileName);
 
         Files.deleteIfExists(filePath);
     }
@@ -60,7 +62,6 @@ public class FileStorageService {
      * Returns the path of a stored resume file.
      */
     public Path getFilePath(String storedFileName) {
-
-        return Paths.get(UPLOAD_DIR).resolve(storedFileName);
+        return Paths.get(uploadDir).resolve(storedFileName);
     }
 }

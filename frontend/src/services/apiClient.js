@@ -6,11 +6,11 @@ const pendingGets = new Map();
 let cacheVersion = 0;
 
 const getBaseUrl = () => {
-  if (import.meta.env.VITE_API_BASE_URL) {
-    return import.meta.env.VITE_API_BASE_URL;
-  }
   if (typeof window !== "undefined" && (window.location.port === "3000" || window.location.port === "80" || !window.location.port)) {
     return "";
+  }
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL;
   }
   return "http://localhost:8082";
 };

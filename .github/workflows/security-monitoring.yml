@@ -1,0 +1,165 @@
+name: Security Monitoring & DevSecOps Scanning
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+    # Scheduled weekly security scan every Monday at 04:00 UTC
+    - cron: '0 4 * * 1'
+  workflow_dispatch:
+
+# Disable ambient permissions at workflow level; grant least privilege per job
+permissions: {}
+
+jobs:
+  # -------------------------------------------------------------
+  # A. Gitleaks Secret Detection (v3 - Node 24 Compatible)
+  # -------------------------------------------------------------
+  gitleaks:
+    name: Secret Detection (Gitleaks)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository with full commit history
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      # GITLEAKS_LICENSE is required only for organization-owned repositories.
+      # For personal-account repositories, Gitleaks runs without a license.
+      # When deployed to an organization, define GITLEAKS_LICENSE under repository secrets.
+      # GITLEAKS_ENABLE_COMMENTS is disabled to maintain least-privilege permissions (no pull-requests: write required).
+      - name: Run Gitleaks secret scanner
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_COMMENTS: "false"
+
+  # -------------------------------------------------------------
+  # B. Trivy Vulnerability & Misconfiguration Scanner
+  # -------------------------------------------------------------
+  trivy-filesystem:
+    name: Filesystem & Dependency Scan (Trivy)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Generate Trivy SARIF report
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-fs-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          scanners: 'vuln,misconfig,secret'
+          hide-progress: true
+
+      # If SARIF upload fails due to GitHub Code Security / Advanced Security licensing limitations,
+      # continue-on-error prevents workflow failure while preserving the report upload attempt.
+      - name: Upload Trivy filesystem scan results to GitHub Security
+        if: always() && hashFiles('trivy-fs-results.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v4
+        continue-on-error: true
+        with:
+          sarif_file: 'trivy-fs-results.sarif'
+          category: 'trivy-filesystem'
+
+      # The actual Trivy vulnerability gate: strictly fails on HIGH or CRITICAL issues (exit-code 1).
+      - name: Run Trivy filesystem scan gate (Table Output)
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'table'
+          exit-code: '1'
+          severity: 'CRITICAL,HIGH'
+          scanners: 'vuln,misconfig,secret'
+          hide-progress: true
+
+  # -------------------------------------------------------------
+  # C. CodeQL Static Application Security Testing (SAST v4)
+  # -------------------------------------------------------------
+  codeql-analysis:
+    name: CodeQL SAST (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'java-kotlin', 'javascript-typescript' ]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up JDK 21 for Java analysis
+        if: matrix.language == 'java-kotlin'
+        uses: actions/setup-java@v6
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+          cache-dependency-path: backend/pom.xml
+
+      - name: Set up Node.js 24 for frontend analysis
+        if: matrix.language == 'javascript-typescript'
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-extended,security-and-quality
+
+      - name: Build Java backend for CodeQL analysis
+        if: matrix.language == 'java-kotlin'
+        working-directory: backend
+        run: |
+          chmod +x mvnw
+          ./mvnw -B clean compile -DskipTests
+
+      - name: Build frontend for CodeQL analysis
+        if: matrix.language == 'javascript-typescript'
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v4
+        with:
+          category: "/language:${{ matrix.language }}"
+
+  # -------------------------------------------------------------
+  # D. Dependency Review (Pull Requests)
+  # -------------------------------------------------------------
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Dependency Review Scan
+        uses: actions/dependency-review-action@v5
+        with:
+          fail-on-severity: high
+          comment-summary-in-pr: true

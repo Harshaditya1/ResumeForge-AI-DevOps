@@ -1,0 +1,101 @@
+version: 2
+updates:
+  # -------------------------------------------------------------
+  # 1. Maven Dependency Updates (Backend Spring Boot / Java)
+  # -------------------------------------------------------------
+  - package-ecosystem: "maven"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Etc/UTC"
+    target-branch: "main"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "backend"
+      - "maven"
+    commit-message:
+      prefix: "chore(deps-backend)"
+      include: "scope"
+
+  # -------------------------------------------------------------
+  # 2. npm Dependency Updates (Frontend React / Vite)
+  # -------------------------------------------------------------
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Etc/UTC"
+    target-branch: "main"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "frontend"
+      - "npm"
+    commit-message:
+      prefix: "chore(deps-frontend)"
+      include: "scope"
+
+  # -------------------------------------------------------------
+  # 3. Docker Base Image Updates (Backend Dockerfile)
+  # -------------------------------------------------------------
+  - package-ecosystem: "docker"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Etc/UTC"
+    target-branch: "main"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "docker"
+      - "backend"
+    commit-message:
+      prefix: "chore(docker-backend)"
+      include: "scope"
+
+  # -------------------------------------------------------------
+  # 4. Docker Base Image Updates (Frontend Dockerfile)
+  # -------------------------------------------------------------
+  - package-ecosystem: "docker"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Etc/UTC"
+    target-branch: "main"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "docker"
+      - "frontend"
+    commit-message:
+      prefix: "chore(docker-frontend)"
+      include: "scope"
+
+  # -------------------------------------------------------------
+  # 5. GitHub Actions CI/CD Workflow Updates
+  # -------------------------------------------------------------
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Etc/UTC"
+    target-branch: "main"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "ci/cd"
+      - "github-actions"
+    commit-message:
+      prefix: "chore(ci-actions)"
+      include: "scope"

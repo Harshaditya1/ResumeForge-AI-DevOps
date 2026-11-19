@@ -15,17 +15,13 @@ public interface JobDescriptionRepository
             Long userId
     );
 
-    /**
-     * Latest Job Description of current user
-     */
     Optional<JobDescription> findFirstByUserIdOrderByCreatedAtDesc(
             Long userId
     );
 
-    /**
-     * Complete Job Description History
-     */
     List<JobDescription> findAllByUserIdOrderByCreatedAtDesc(
             Long userId
     );
+
+    long countByUserId(Long userId);
 }

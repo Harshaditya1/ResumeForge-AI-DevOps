@@ -32,20 +32,24 @@ public class AuthService {
         this.jwtService = jwtService;
     }
 
-    public void register(RegisterRequestDto request) {
+    public AuthResponseDto register(RegisterRequestDto request) {
 
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("Email already registered.");
+            throw new IllegalArgumentException("Email is already registered. Please sign in instead.");
         }
 
         User user = User.builder()
-                .fullName(request.getFullName())
-                .email(request.getEmail())
+                .fullName(request.getFullName().trim())
+                .email(request.getEmail().trim().toLowerCase())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(Role.USER)
                 .build();
 
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
+
+        String token = jwtService.generateToken(savedUser.getEmail());
+
+        return new AuthResponseDto(token);
     }
 
     public AuthResponseDto login(LoginRequestDto request) {

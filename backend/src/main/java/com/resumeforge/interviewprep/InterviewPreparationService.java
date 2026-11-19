@@ -31,7 +31,8 @@ public class InterviewPreparationService {
     public List<InterviewQuestionDto> getQuestions(
             InterviewQuestionCategory category,
             InterviewQuestionDifficulty difficulty,
-            String search
+            String search,
+            Boolean bookmarkedOnly
     ) {
         User user = currentUserService.getCurrentUser();
         List<InterviewQuestionBankItem> questions =
@@ -50,11 +51,20 @@ public class InterviewPreparationService {
         return questions.stream()
                 .filter(item -> category == null || item.getCategory() == category)
                 .filter(item -> difficulty == null || item.getDifficulty() == difficulty)
-                .filter(item -> normalizedSearch.isBlank()
-                        || item.getQuestion().toLowerCase(Locale.ROOT)
-                        .contains(normalizedSearch)
-                        || item.getAnswer().toLowerCase(Locale.ROOT)
-                        .contains(normalizedSearch))
+                .filter(item -> {
+                    if (bookmarkedOnly == null || !bookmarkedOnly) return true;
+                    UserQuestionProgress p = progress.get(item.getId());
+                    return p != null && p.isFavorite();
+                })
+                .filter(item -> {
+                    if (normalizedSearch.isBlank()) return true;
+                    boolean matchTitle = item.getTitle() != null && item.getTitle().toLowerCase(Locale.ROOT).contains(normalizedSearch);
+                    boolean matchTopic = item.getTopic() != null && item.getTopic().toLowerCase(Locale.ROOT).contains(normalizedSearch);
+                    boolean matchQuestion = item.getQuestion() != null && item.getQuestion().toLowerCase(Locale.ROOT).contains(normalizedSearch);
+                    boolean matchAnswer = item.getAnswer() != null && item.getAnswer().toLowerCase(Locale.ROOT).contains(normalizedSearch);
+                    boolean matchSource = item.getSourceName() != null && item.getSourceName().toLowerCase(Locale.ROOT).contains(normalizedSearch);
+                    return matchTitle || matchTopic || matchQuestion || matchAnswer || matchSource;
+                })
                 .map(item -> toDto(item, progress.get(item.getId())))
                 .toList();
     }
@@ -135,12 +145,33 @@ public class InterviewPreparationService {
             InterviewQuestionBankItem item,
             UserQuestionProgress progress
     ) {
+        String title = item.getTitle();
+        if (title == null || title.isBlank()) {
+            title = item.getQuestion();
+        }
+        String topic = item.getTopic();
+        if (topic == null || topic.isBlank()) {
+            topic = item.getCategory().name().replace('_', ' ');
+        }
+        String sourceName = item.getSourceName();
+        if (sourceName == null || sourceName.isBlank()) {
+            sourceName = "Curated Educational Source";
+        }
+        String sourceUrl = item.getSourceUrl();
+        if (sourceUrl == null || sourceUrl.isBlank()) {
+            sourceUrl = "https://www.geeksforgeeks.org";
+        }
+
         return InterviewQuestionDto.builder()
                 .id(item.getId())
                 .category(item.getCategory())
                 .difficulty(item.getDifficulty())
+                .title(title)
+                .topic(topic)
                 .question(item.getQuestion())
                 .answer(item.getAnswer())
+                .sourceName(sourceName)
+                .sourceUrl(sourceUrl)
                 .completed(progress != null && progress.isCompleted())
                 .favorite(progress != null && progress.isFavorite())
                 .build();

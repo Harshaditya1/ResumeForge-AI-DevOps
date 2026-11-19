@@ -15,4 +15,10 @@ public interface JobApplicationRepository
     long countByUserId(Long userId);
 
     long countByUserIdAndStatus(Long userId, JobApplicationStatus status);
+
+    boolean existsByUserIdAndCompanyNameIgnoreCaseAndJobTitleIgnoreCase(Long userId, String companyName, String jobTitle);
+
+    boolean existsByUserIdAndApplicationUrl(Long userId, String applicationUrl);
+
+    boolean existsByUserIdAndExternalJobId(Long userId, String externalJobId);
 }

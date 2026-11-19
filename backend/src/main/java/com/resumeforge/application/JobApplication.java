@@ -36,6 +36,18 @@ public class JobApplication {
     @Column(nullable = false, length = 160)
     private String jobTitle;
 
+    @Column(length = 160)
+    private String location;
+
+    @Column(length = 60)
+    private String experienceLevel;
+
+    @Column(length = 60)
+    private String jobType;
+
+    @Column(length = 100)
+    private String source;
+
     @Column(columnDefinition = "TEXT")
     private String jobDescription;
 
@@ -45,6 +57,11 @@ public class JobApplication {
     private LocalDate appliedDate;
 
     private LocalDate interviewDate;
+
+    private LocalDate deadline;
+
+    @Column(length = 100)
+    private String externalJobId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)

@@ -1,22 +1,38 @@
-
 # Environment variables and secrets
 .env
 .env.*
 !.env.example
 
-# Java / Maven
+# Uploaded resume files and user files
+uploads/*
+!uploads/.gitkeep
+backend/uploads/
+*.pdf
+*.docx
+*.doc
+
+# Java / Maven build output
+backend/target/
 **/target/
 
-# Node.js
+# Node.js dependencies and build output
+frontend/node_modules/
 **/node_modules/
+frontend/dist/
 **/dist/
 
-# Uploaded resume files
-backend/uploads/
+# IDE and Editor configuration
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
 
 # Logs
 *.log
+logs/
 
-# OS files
+# OS-generated files
 .DS_Store
 Thumbs.db
+desktop.ini

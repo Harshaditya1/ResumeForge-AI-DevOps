@@ -8,7 +8,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/interview-prep")
-@CrossOrigin(origins = "http://localhost:5173")
 public class InterviewPreparationController {
 
     private final InterviewPreparationService service;

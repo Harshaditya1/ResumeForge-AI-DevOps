@@ -12,7 +12,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/interview-questions")
-@CrossOrigin(origins = "http://localhost:5173")
 public class InterviewQuestionController {
 
     private final InterviewQuestionService interviewQuestionService;

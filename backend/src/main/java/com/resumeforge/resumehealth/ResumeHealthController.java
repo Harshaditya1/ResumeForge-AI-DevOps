@@ -5,7 +5,6 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/resume-health")
-@CrossOrigin(origins = "http://localhost:5173")
 public class ResumeHealthController {
 
     private final ResumeHealthService service;

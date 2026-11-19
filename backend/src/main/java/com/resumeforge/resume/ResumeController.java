@@ -18,7 +18,6 @@ import java.nio.file.Path;
 
 @RestController
 @RequestMapping("/api/resumes")
-@CrossOrigin(origins = "http://localhost:5173")
 public class ResumeController {
 
     private final ResumeService resumeService;

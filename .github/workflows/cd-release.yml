@@ -1,0 +1,237 @@
+name: Continuous Delivery (CD) - Container Release
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+# Disable all ambient permissions at workflow level; grant least privilege per job
+permissions: {}
+
+concurrency:
+  group: cd-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  # -------------------------------------------------------------
+  # Job 1: Build & Verify Backend Container Image
+  # -------------------------------------------------------------
+  verify-backend:
+    name: Build & Verify Backend Image
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Validate release branch is main
+        run: |
+          if [ "${{ github.ref }}" != "refs/heads/main" ]; then
+            echo "::error::CD execution is strictly restricted to the main branch. Triggered ref: ${{ github.ref }}"
+            exit 1
+          fi
+
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Resolve lowercase repository owner and image reference
+        id: prep
+        run: |
+          OWNER_LC=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE="ghcr.io/${OWNER_LC}/resumeforge-backend"
+          echo "owner_lc=${OWNER_LC}" >> "$GITHUB_OUTPUT"
+          echo "image=${IMAGE}" >> "$GITHUB_OUTPUT"
+          echo "tag_latest=${IMAGE}:latest" >> "$GITHUB_OUTPUT"
+          echo "tag_sha=${IMAGE}:${{ github.sha }}" >> "$GITHUB_OUTPUT"
+
+      - name: Build backend Docker image locally
+        uses: docker/build-push-action@v7
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          load: true
+          tags: |
+            ${{ steps.prep.outputs.tag_latest }}
+            ${{ steps.prep.outputs.tag_sha }}
+
+      - name: Generate Trivy SARIF report for backend
+        uses: aquasecurity/trivy-action@0.36.0
+        with:
+          image-ref: ${{ steps.prep.outputs.tag_sha }}
+          format: 'sarif'
+          output: 'trivy-backend-results.sarif'
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy backend SARIF report to GitHub Security
+        if: always() && hashFiles('trivy-backend-results.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v4
+        continue-on-error: true
+        with:
+          sarif_file: 'trivy-backend-results.sarif'
+          category: 'trivy-backend-container'
+
+      - name: Run Trivy vulnerability scan on backend image (Security Gate)
+        uses: aquasecurity/trivy-action@0.36.0
+        with:
+          image-ref: ${{ steps.prep.outputs.tag_sha }}
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: false
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Export verified backend image tarball
+        run: |
+          docker save "${{ steps.prep.outputs.tag_latest }}" "${{ steps.prep.outputs.tag_sha }}" | gzip > backend-image.tar.gz
+
+      - name: Upload backend image artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: backend-image
+          path: backend-image.tar.gz
+          retention-days: 1
+
+  # -------------------------------------------------------------
+  # Job 2: Build & Verify Frontend Container Image
+  # -------------------------------------------------------------
+  verify-frontend:
+    name: Build & Verify Frontend Image
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Validate release branch is main
+        run: |
+          if [ "${{ github.ref }}" != "refs/heads/main" ]; then
+            echo "::error::CD execution is strictly restricted to the main branch. Triggered ref: ${{ github.ref }}"
+            exit 1
+          fi
+
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Validate frontend API URL repository variable
+        run: |
+          if [ -z "${{ vars.VITE_API_BASE_URL }}" ]; then
+            echo "::error::Missing repository variable VITE_API_BASE_URL. Please define VITE_API_BASE_URL under Repository Settings > Secrets and variables > Actions > Variables (e.g., http://localhost:8081 or production backend API endpoint)."
+            exit 1
+          fi
+
+      - name: Resolve lowercase repository owner and image reference
+        id: prep
+        run: |
+          OWNER_LC=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE="ghcr.io/${OWNER_LC}/resumeforge-frontend"
+          echo "owner_lc=${OWNER_LC}" >> "$GITHUB_OUTPUT"
+          echo "image=${IMAGE}" >> "$GITHUB_OUTPUT"
+          echo "tag_latest=${IMAGE}:latest" >> "$GITHUB_OUTPUT"
+          echo "tag_sha=${IMAGE}:${{ github.sha }}" >> "$GITHUB_OUTPUT"
+
+      - name: Build frontend Docker image locally
+        uses: docker/build-push-action@v7
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          load: true
+          build-args: |
+            VITE_API_BASE_URL=${{ vars.VITE_API_BASE_URL }}
+          tags: |
+            ${{ steps.prep.outputs.tag_latest }}
+            ${{ steps.prep.outputs.tag_sha }}
+
+      - name: Generate Trivy SARIF report for frontend
+        uses: aquasecurity/trivy-action@0.36.0
+        with:
+          image-ref: ${{ steps.prep.outputs.tag_sha }}
+          format: 'sarif'
+          output: 'trivy-frontend-results.sarif'
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy frontend SARIF report to GitHub Security
+        if: always() && hashFiles('trivy-frontend-results.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v4
+        continue-on-error: true
+        with:
+          sarif_file: 'trivy-frontend-results.sarif'
+          category: 'trivy-frontend-container'
+
+      - name: Run Trivy vulnerability scan on frontend image (Security Gate)
+        uses: aquasecurity/trivy-action@0.36.0
+        with:
+          image-ref: ${{ steps.prep.outputs.tag_sha }}
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: false
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Export verified frontend image tarball
+        run: |
+          docker save "${{ steps.prep.outputs.tag_latest }}" "${{ steps.prep.outputs.tag_sha }}" | gzip > frontend-image.tar.gz
+
+      - name: Upload frontend image artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: frontend-image
+          path: frontend-image.tar.gz
+          retention-days: 1
+
+  # -------------------------------------------------------------
+  # Job 3: Authenticate & Publish Verified Images to GHCR
+  # Runs ONLY after BOTH backend and frontend pass their security gates
+  # -------------------------------------------------------------
+  publish-images:
+    name: Authenticate & Publish Images to GHCR
+    runs-on: ubuntu-latest
+    needs: [verify-backend, verify-frontend]
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Validate release branch is main
+        run: |
+          if [ "${{ github.ref }}" != "refs/heads/main" ]; then
+            echo "::error::CD execution is strictly restricted to the main branch."
+            exit 1
+          fi
+
+      - name: Download backend image artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: backend-image
+
+      - name: Download frontend image artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: frontend-image
+
+      - name: Load verified container images into Docker
+        run: |
+          gunzip -c backend-image.tar.gz | docker load
+          gunzip -c frontend-image.tar.gz | docker load
+
+      - name: Log in to GitHub Container Registry (GHCR)
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish verified container images to GHCR
+        run: |
+          OWNER_LC=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          docker push "ghcr.io/${OWNER_LC}/resumeforge-backend:latest"
+          docker push "ghcr.io/${OWNER_LC}/resumeforge-backend:${{ github.sha }}"
+          docker push "ghcr.io/${OWNER_LC}/resumeforge-frontend:latest"
+          docker push "ghcr.io/${OWNER_LC}/resumeforge-frontend:${{ github.sha }}"

@@ -58,7 +58,7 @@ jobs:
             ${{ steps.prep.outputs.tag_sha }}
 
       - name: Generate Trivy SARIF report for backend
-        uses: aquasecurity/trivy-action@0.36.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ steps.prep.outputs.tag_sha }}
           format: 'sarif'
@@ -75,7 +75,7 @@ jobs:
           category: 'trivy-backend-container'
 
       - name: Run Trivy vulnerability scan on backend image (Security Gate)
-        uses: aquasecurity/trivy-action@0.36.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ steps.prep.outputs.tag_sha }}
           format: 'table'
@@ -149,7 +149,7 @@ jobs:
             ${{ steps.prep.outputs.tag_sha }}
 
       - name: Generate Trivy SARIF report for frontend
-        uses: aquasecurity/trivy-action@0.36.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ steps.prep.outputs.tag_sha }}
           format: 'sarif'
@@ -166,7 +166,7 @@ jobs:
           category: 'trivy-frontend-container'
 
       - name: Run Trivy vulnerability scan on frontend image (Security Gate)
-        uses: aquasecurity/trivy-action@0.36.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ steps.prep.outputs.tag_sha }}
           format: 'table'

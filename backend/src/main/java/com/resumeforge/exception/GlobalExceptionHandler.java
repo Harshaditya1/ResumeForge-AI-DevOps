@@ -94,6 +94,24 @@ public class GlobalExceptionHandler {
                 .body(response);
     }
 
+    @ExceptionHandler(org.springframework.security.core.AuthenticationException.class)
+    public ResponseEntity<Map<String, Object>> handleAuthentication(
+            org.springframework.security.core.AuthenticationException ex
+    ) {
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("timestamp", LocalDateTime.now());
+        response.put("status", HttpStatus.UNAUTHORIZED.value());
+        response.put("error", "Unauthorized");
+        response.put(
+                "message",
+                "Invalid email or password. Please verify your credentials or create a new account."
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(response);
+    }
+
     @ExceptionHandler(com.openai.errors.InternalServerException.class)
     public ResponseEntity<Map<String, Object>> handleAiUnavailable() {
         Map<String, Object> response = new LinkedHashMap<>();

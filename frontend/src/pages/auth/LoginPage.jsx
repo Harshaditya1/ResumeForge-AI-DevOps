@@ -34,36 +34,50 @@ const { login } = useAuth();
   });
 
   const onSubmit = async (data) => {
-  if (loading) return;
+    if (loading) return;
 
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    const response = await authService.login({
-      email: data.email.trim(),
-      password: data.password,
-    });
+      const response = await authService.login({
+        email: data.email.trim(),
+        password: data.password,
+      });
 
-    // Save JWT in Context + LocalStorage
-    login(response.token);
+      // Save JWT in Context + LocalStorage
+      login(response.token);
 
-    toast.success("Login successful");
+      toast.success("Login successful! Welcome back.");
 
-    navigate("/dashboard", {
-      replace: true,
-    });
-  } catch (error) {
-    const message =
-      error?.response?.data?.message ||
-      error?.response?.data?.error ||
-      error?.message ||
-      "Unable to login. Please try again.";
+      navigate("/dashboard", {
+        replace: true,
+      });
+    } catch (error) {
+      let message =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        error?.message;
 
-    toast.error(message);
-  } finally {
-    setLoading(false);
-  }
-};
+      if (error?.response?.status === 401 || error?.response?.status === 403) {
+        message =
+          "Invalid email or password. If you haven't registered yet, please click 'Create Account' below.";
+      } else if (!message) {
+        message = "Unable to sign in. Please verify your connection and try again.";
+      }
+
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onInvalid = (validationErrors) => {
+    if (validationErrors.email) {
+      toast.error(validationErrors.email.message || "Please enter a valid email address.");
+    } else if (validationErrors.password) {
+      toast.error(validationErrors.password.message || "Please enter your password (minimum 6 characters).");
+    }
+  };
 
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#091413] px-6 py-10">
@@ -97,7 +111,7 @@ const { login } = useAuth();
           </div>
 
           <form
-            onSubmit={handleSubmit(onSubmit)}
+            onSubmit={handleSubmit(onSubmit, onInvalid)}
             className="space-y-6"
             noValidate
           >

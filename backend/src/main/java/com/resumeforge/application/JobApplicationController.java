@@ -29,8 +29,11 @@ public class JobApplicationController {
     }
 
     @GetMapping
-    public List<JobApplicationResponseDto> getAll() {
-        return service.getAll();
+    public List<JobApplicationResponseDto> getAll(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) JobApplicationStatus status
+    ) {
+        return service.getAll(search, status);
     }
 
     @GetMapping("/statistics")

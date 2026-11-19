@@ -13,10 +13,16 @@ public class JobApplicationResponseDto {
     Long id;
     String companyName;
     String jobTitle;
+    String location;
+    String experienceLevel;
+    String jobType;
+    String source;
     String jobDescription;
     String applicationUrl;
     LocalDate appliedDate;
     LocalDate interviewDate;
+    LocalDate deadline;
+    String externalJobId;
     JobApplicationStatus status;
     String notes;
     LocalDateTime createdAt;

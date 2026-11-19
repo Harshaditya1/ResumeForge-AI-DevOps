@@ -14,10 +14,12 @@ import { FiLoader } from "react-icons/fi";
 import { HiSparkles } from "react-icons/hi2";
 import toast from "react-hot-toast";
 
+import { useAuth } from "../../context/AuthContext";
 import authService from "../../services/authService";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -44,10 +46,9 @@ export default function RegisterPage() {
     if (!password) return 0;
 
     let score = 0;
-
+    if (password.length >= 6) score++;
     if (password.length >= 8) score++;
-    if (/[A-Z]/.test(password)) score++;
-    if (/[a-z]/.test(password)) score++;
+    if (/[A-Z]/.test(password) || /[a-z]/.test(password)) score++;
     if (/\d/.test(password)) score++;
     if (/[^A-Za-z0-9]/.test(password)) score++;
 
@@ -62,17 +63,20 @@ export default function RegisterPage() {
 
   const onSubmit = async (data) => {
     try {
-      await authService.register({
+      const response = await authService.register({
         fullName: data.fullName.trim(),
         email: data.email.trim().toLowerCase(),
         password: data.password,
       });
 
-      toast.success("Account created successfully!");
-
-      navigate("/login", {
-        replace: true,
-      });
+      if (response && response.token) {
+        login(response.token);
+        toast.success("Account created successfully! Welcome to ResumeForge AI.");
+        navigate("/dashboard", { replace: true });
+      } else {
+        toast.success("Account created successfully! Redirecting to login...");
+        navigate("/login", { replace: true });
+      }
     } catch (error) {
       const message =
         error?.response?.data?.message ||
@@ -81,7 +85,7 @@ export default function RegisterPage() {
 
       if (
         message.toLowerCase().includes("email") &&
-        message.toLowerCase().includes("exist")
+        (message.toLowerCase().includes("exist") || message.toLowerCase().includes("already"))
       ) {
         setError("email", {
           type: "server",
@@ -94,14 +98,15 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#030712] text-white">
-      <div className="absolute inset-0">
-        <div className="absolute -left-40 top-0 h-96 w-96 rounded-full bg-cyan-500/20 blur-[140px]" />
-        <div className="absolute right-0 top-20 h-[28rem] w-[28rem] rounded-full bg-indigo-500/20 blur-[170px]" />
-        <div className="absolute bottom-0 left-1/2 h-[26rem] w-[26rem] -translate-x-1/2 rounded-full bg-blue-500/10 blur-[170px]" />
-    </div>
+    <div className="relative min-h-screen overflow-hidden bg-[#091413] text-white">
+      {/* Background Orbs matching Dark Green theme */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -left-40 top-0 h-96 w-96 rounded-full bg-[#408A71]/20 blur-[140px]" />
+        <div className="absolute right-0 top-20 h-[28rem] w-[28rem] rounded-full bg-[#285A48]/25 blur-[170px]" />
+        <div className="absolute bottom-0 left-1/2 h-[26rem] w-[26rem] -translate-x-1/2 rounded-full bg-[#408A71]/10 blur-[170px]" />
+      </div>
 
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_60%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.06),transparent_60%)]" />
 
       <div className="relative z-10 flex min-h-screen items-center justify-center px-5 py-10">
         <motion.div
@@ -120,15 +125,15 @@ export default function RegisterPage() {
               transition={{ delay: 0.1 }}
               className="mb-8 text-center"
             >
-              <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-cyan-500/15 ring-1 ring-cyan-400/20">
-                <HiSparkles className="text-3xl text-cyan-300" />
+              <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#408A71]/20 ring-1 ring-[#408A71]/30">
+                <HiSparkles className="text-3xl text-[#B0E4CC]" />
               </div>
 
-              <h1 className="text-3xl font-bold tracking-tight">
+              <h1 className="text-3xl font-bold tracking-tight text-white">
                 Create Account
               </h1>
 
-              <p className="mt-2 text-sm text-slate-300">
+              <p className="mt-2 text-sm text-[#A7B8B5]">
                 Build ATS-optimized resumes with ResumeForge AI.
               </p>
             </motion.div>
@@ -141,20 +146,20 @@ export default function RegisterPage() {
               <div>
                 <label
                   htmlFor="fullName"
-                  className="mb-2 block text-sm font-medium text-slate-200"
+                  className="mb-2 block text-sm font-medium text-[#B0E4CC]"
                 >
                   Full Name
                 </label>
 
                 <div className="relative">
-                  <FaUser className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <FaUser className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#408A71]" />
 
                   <input
                     id="fullName"
                     type="text"
                     autoComplete="name"
                     aria-invalid={!!errors.fullName}
-                    className="w-full rounded-2xl border border-white/10 bg-white/5 py-3 pl-12 pr-4 text-white placeholder:text-slate-500 outline-none transition-all duration-200 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-500/30"
+                    className="w-full rounded-2xl border border-white/10 bg-white/5 py-3 pl-12 pr-4 text-white placeholder:text-gray-500 outline-none transition-all duration-200 focus:border-[#408A71] focus:ring-2 focus:ring-[#408A71]/30"
                     placeholder="Enter your full name"
                     {...register("fullName", {
                       required: "Full name is required",
@@ -179,20 +184,20 @@ export default function RegisterPage() {
               <div>
                 <label
                   htmlFor="email"
-                  className="mb-2 block text-sm font-medium text-slate-200"
+                  className="mb-2 block text-sm font-medium text-[#B0E4CC]"
                 >
                   Email Address
                 </label>
 
                 <div className="relative">
-                  <FaEnvelope className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <FaEnvelope className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#408A71]" />
 
                   <input
                     id="email"
                     type="email"
                     autoComplete="email"
                     aria-invalid={!!errors.email}
-                    className="w-full rounded-2xl border border-white/10 bg-white/5 py-3 pl-12 pr-4 text-white placeholder:text-slate-500 outline-none transition-all duration-200 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-500/30"
+                    className="w-full rounded-2xl border border-white/10 bg-white/5 py-3 pl-12 pr-4 text-white placeholder:text-gray-500 outline-none transition-all duration-200 focus:border-[#408A71] focus:ring-2 focus:ring-[#408A71]/30"
                     placeholder="Enter your email"
                     {...register("email", {
                       required: "Email is required",
@@ -214,29 +219,30 @@ export default function RegisterPage() {
                   </p>
                 )}
               </div>
-                            <div>
+
+              <div>
                 <label
                   htmlFor="password"
-                  className="mb-2 block text-sm font-medium text-slate-200"
+                  className="mb-2 block text-sm font-medium text-[#B0E4CC]"
                 >
                   Password
                 </label>
 
                 <div className="relative">
-                  <FaLock className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <FaLock className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#408A71]" />
 
                   <input
                     id="password"
                     type={showPassword ? "text" : "password"}
                     autoComplete="new-password"
                     aria-invalid={!!errors.password}
-                    placeholder="Create a strong password"
-                    className="w-full rounded-2xl border border-white/10 bg-white/5 py-3 pl-12 pr-14 text-white placeholder:text-slate-500 outline-none transition-all duration-200 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-500/30"
+                    placeholder="Create password (min 6 characters)"
+                    className="w-full rounded-2xl border border-white/10 bg-white/5 py-3 pl-12 pr-14 text-white placeholder:text-gray-500 outline-none transition-all duration-200 focus:border-[#408A71] focus:ring-2 focus:ring-[#408A71]/30"
                     {...register("password", {
                       required: "Password is required",
                       minLength: {
-                        value: 8,
-                        message: "Password must be at least 8 characters",
+                        value: 6,
+                        message: "Password must be at least 6 characters",
                       },
                     })}
                   />
@@ -247,7 +253,7 @@ export default function RegisterPage() {
                     aria-label={
                       showPassword ? "Hide password" : "Show password"
                     }
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-cyan-300"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 transition hover:text-[#B0E4CC]"
                   >
                     {showPassword ? <FaEyeSlash /> : <FaEye />}
                   </button>
@@ -255,7 +261,7 @@ export default function RegisterPage() {
 
                 {password && (
                   <div className="mt-3">
-                    <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
+                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
                       <div
                         className={`h-full rounded-full transition-all duration-300 ${strengthColor}`}
                         style={{
@@ -263,16 +269,6 @@ export default function RegisterPage() {
                         }}
                       />
                     </div>
-
-                    <p className="mt-2 text-xs text-slate-400">
-                      {passwordStrength <= 1 &&
-                        "Weak password"}
-                      {passwordStrength > 1 &&
-                        passwordStrength <= 3 &&
-                        "Medium password"}
-                      {passwordStrength > 3 &&
-                        "Strong password"}
-                    </p>
                   </div>
                 )}
 
@@ -289,13 +285,13 @@ export default function RegisterPage() {
               <div>
                 <label
                   htmlFor="confirmPassword"
-                  className="mb-2 block text-sm font-medium text-slate-200"
+                  className="mb-2 block text-sm font-medium text-[#B0E4CC]"
                 >
                   Confirm Password
                 </label>
 
                 <div className="relative">
-                  <FaLock className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <FaLock className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#408A71]" />
 
                   <input
                     id="confirmPassword"
@@ -303,7 +299,7 @@ export default function RegisterPage() {
                     autoComplete="new-password"
                     aria-invalid={!!errors.confirmPassword}
                     placeholder="Confirm your password"
-                    className="w-full rounded-2xl border border-white/10 bg-white/5 py-3 pl-12 pr-14 text-white placeholder:text-slate-500 outline-none transition-all duration-200 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-500/30"
+                    className="w-full rounded-2xl border border-white/10 bg-white/5 py-3 pl-12 pr-14 text-white placeholder:text-gray-500 outline-none transition-all duration-200 focus:border-[#408A71] focus:ring-2 focus:ring-[#408A71]/30"
                     {...register("confirmPassword", {
                       required: "Please confirm your password",
                       validate: (value) =>
@@ -322,7 +318,7 @@ export default function RegisterPage() {
                         ? "Hide confirm password"
                         : "Show confirm password"
                     }
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-cyan-300"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 transition hover:text-[#B0E4CC]"
                   >
                     {showConfirmPassword ? (
                       <FaEyeSlash />
@@ -347,7 +343,7 @@ export default function RegisterPage() {
                 whileTap={{ scale: 0.98 }}
                 type="submit"
                 disabled={isSubmitting}
-                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-3 font-semibold text-white shadow-lg shadow-cyan-500/20 transition disabled:cursor-not-allowed disabled:opacity-60"
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#408A71] hover:bg-[#34715c] px-5 py-3 font-semibold text-white shadow-lg transition disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
               >
                 {isSubmitting ? (
                   <>
@@ -363,11 +359,11 @@ export default function RegisterPage() {
               </motion.button>
             </form>
 
-            <div className="mt-8 text-center text-sm text-slate-400">
+            <div className="mt-8 text-center text-sm text-[#A7B8B5]">
               Already have an account?{" "}
               <Link
                 to="/login"
-                className="font-semibold text-cyan-300 transition hover:text-cyan-200"
+                className="font-semibold text-[#B0E4CC] transition hover:text-white"
               >
                 Sign In
               </Link>

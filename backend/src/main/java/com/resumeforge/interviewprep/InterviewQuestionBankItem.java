@@ -30,9 +30,21 @@ public class InterviewQuestionBankItem {
     @Column(nullable = false, length = 10)
     private InterviewQuestionDifficulty difficulty;
 
+    @Column(length = 255)
+    private String title;
+
+    @Column(length = 100)
+    private String topic;
+
     @Column(nullable = false, columnDefinition = "TEXT")
     private String question;
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String answer;
+
+    @Column(length = 100)
+    private String sourceName;
+
+    @Column(length = 1000)
+    private String sourceUrl;
 }

@@ -21,9 +21,10 @@ public class InterviewPreparationController {
     public List<InterviewQuestionDto> getQuestions(
             @RequestParam(required = false) InterviewQuestionCategory category,
             @RequestParam(required = false) InterviewQuestionDifficulty difficulty,
-            @RequestParam(required = false) String search
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Boolean bookmarkedOnly
     ) {
-        return service.getQuestions(category, difficulty, search);
+        return service.getQuestions(category, difficulty, search, bookmarkedOnly);
     }
 
     @GetMapping("/questions/{id}")

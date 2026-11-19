@@ -26,9 +26,9 @@ public class DashboardService {
         Long userId = currentUserService.getCurrentUser().getId();
 
         return DashboardSummaryDTO.builder()
-                .totalResumes(resumeRepository.count())
+                .totalResumes(resumeRepository.countByUserId(userId))
                 .totalGeneratedResumes(generatedResumeRepository.count())
-                .totalJobDescriptions(jobDescriptionRepository.count())
+                .totalJobDescriptions(jobDescriptionRepository.countByUserId(userId))
                 .totalTailoredResumes(tailoredResumeRepository.count())
                 .totalApplications(jobApplicationRepository.countByUserId(userId))
                 .totalInterviewQuestionsCompleted(

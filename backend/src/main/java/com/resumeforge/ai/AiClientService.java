@@ -29,7 +29,7 @@ public class AiClientService {
 
     public AiClientService(
             ChatClient.Builder chatClientBuilder,
-            @Value("${GEMINI_API_KEY}") String apiKey,
+            @Value("${GEMINI_API_KEY:}") String apiKey,
             @Value("${GEMINI_NATIVE_MODEL:gemini-2.5-flash}")
             String nativeModel
     ) {

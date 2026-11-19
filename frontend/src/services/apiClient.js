@@ -5,10 +5,19 @@ const getCache = new Map();
 const pendingGets = new Map();
 let cacheVersion = 0;
 
+const getBaseUrl = () => {
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL;
+  }
+  if (typeof window !== "undefined" && (window.location.port === "3000" || window.location.port === "80" || !window.location.port)) {
+    return "";
+  }
+  return "http://localhost:8082";
+};
+
 const apiClient = axios.create({
-  baseURL:
-    import.meta.env.VITE_API_BASE_URL ||
-    "http://localhost:8082",
+  baseURL: getBaseUrl(),
+  timeout: 15000,
   headers: {
     "Content-Type": "application/json",
   },
@@ -68,6 +77,18 @@ apiClient.interceptors.request.use(
     return config;
   },
   (error) => Promise.reject(error)
+);
+
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.code === "ECONNABORTED" || error?.message?.includes("timeout")) {
+      error.message = "Connection timed out. Please try again.";
+    } else if (error.message === "Network Error" || !error.response) {
+      error.message = "Unable to connect to the server. Please ensure the backend is running.";
+    }
+    return Promise.reject(error);
+  }
 );
 
 export default apiClient;

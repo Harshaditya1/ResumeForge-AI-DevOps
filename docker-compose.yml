@@ -8,6 +8,8 @@ services:
       - "8081:8080"
     env_file:
       - .env
+    environment:
+      - SERVER_PORT=8080
     volumes:
       - resume_uploads:/app/uploads
     restart: unless-stopped

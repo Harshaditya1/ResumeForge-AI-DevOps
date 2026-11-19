@@ -97,6 +97,18 @@ export default function RegisterPage() {
     }
   };
 
+  const onInvalid = (validationErrors) => {
+    if (validationErrors.fullName) {
+      toast.error(validationErrors.fullName.message || "Please enter your full name.");
+    } else if (validationErrors.email) {
+      toast.error(validationErrors.email.message || "Please enter a valid email address.");
+    } else if (validationErrors.password) {
+      toast.error(validationErrors.password.message || "Please enter a password of at least 6 characters.");
+    } else if (validationErrors.confirmPassword) {
+      toast.error(validationErrors.confirmPassword.message || "Passwords do not match.");
+    }
+  };
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#091413] text-white">
       {/* Background Orbs matching Dark Green theme */}
@@ -139,7 +151,7 @@ export default function RegisterPage() {
             </motion.div>
 
             <form
-              onSubmit={handleSubmit(onSubmit)}
+              onSubmit={handleSubmit(onSubmit, onInvalid)}
               noValidate
               className="space-y-5"
             >
